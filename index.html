@@ -18,8 +18,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .del:hover{opacity:.9;background:var(--tint)}
 .mid{flex:1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:0}
 .score{flex:1;text-align:center;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;font-size:min(55cqh,26cqw);font-size:clamp(40px,min(55cqh,26cqw),400px)}
-.btn{flex:none;width:clamp(52px,16cqmin,96px);height:clamp(52px,16cqmin,96px);border-radius:50%;border:2px solid var(--fg);background:var(--tint);color:var(--fg);font-size:clamp(26px,8cqmin,48px);line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.btn:active{background:var(--fg);color:var(--bg)}
+.mid{padding:0 4cqw}
+.btn{flex:none;align-self:stretch;width:clamp(84px,24cqw,200px);border:none;background:transparent;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg)}
+.ring{width:clamp(52px,16cqmin,96px);height:clamp(52px,16cqmin,96px);border-radius:50%;border:2px solid var(--fg);background:var(--tint);font-size:clamp(26px,8cqmin,48px);line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.btn:active .ring{background:var(--fg);color:var(--bg)}
 footer{display:flex;justify-content:space-between;align-items:center;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:#111}
 footer button{font:inherit;font-size:13px;color:#888;background:transparent;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;letter-spacing:.04em}
 footer button:hover{color:#ccc;background:#222}
@@ -63,7 +65,7 @@ function render(){
     s.className='sec';
     s.style.setProperty('--bg',bg);s.style.setProperty('--fg',fg);s.style.setProperty('--tint',fg+'14');
     s.innerHTML=`<div class="top"><input class="name" maxlength="24" spellcheck="false"><button class="del" aria-label="Remove player">✕</button></div>
-      <div class="mid"><button class="btn" aria-label="Minus">−</button><div class="score"></div><button class="btn" aria-label="Plus">+</button></div>`;
+      <div class="mid"><button class="btn" aria-label="Minus"><span class="ring">−</span></button><div class="score"></div><button class="btn" aria-label="Plus"><span class="ring">+</span></button></div>`;
     const name=s.querySelector('.name'),score=s.querySelector('.score'),[minus,plus]=s.querySelectorAll('.btn');
     name.value=p.name;score.textContent=p.score;
     name.addEventListener('input',()=>{p.name=name.value;save()});
