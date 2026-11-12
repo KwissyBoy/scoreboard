@@ -22,6 +22,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .btn{flex:none;align-self:stretch;width:clamp(84px,24cqw,200px);border:none;background:transparent;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg)}
 .ring{width:clamp(52px,16cqmin,96px);height:clamp(52px,16cqmin,96px);border-radius:50%;border:2px solid var(--fg);background:var(--tint);font-size:clamp(26px,8cqmin,48px);line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .btn:active .ring{background:var(--fg);color:var(--bg)}
+.score{cursor:text}
+.edit{width:100%;font:inherit;font-weight:600;font-variant-numeric:tabular-nums;text-align:center;color:inherit;background:var(--tint);border:none;border-radius:12px;outline:2px solid var(--fg);padding:0;-moz-appearance:textfield;-webkit-user-select:text;user-select:text}
+.edit::-webkit-inner-spin-button,.edit::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 footer{display:flex;justify-content:space-between;align-items:center;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:#111}
 footer button{font:inherit;font-size:13px;color:#888;background:transparent;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;letter-spacing:.04em}
 footer button:hover{color:#ccc;background:#222}
@@ -57,6 +60,23 @@ function holdable(btn,step,p,out){
   btn.addEventListener('contextmenu',e=>e.preventDefault());
 }
 
+function editScore(p,score){
+  if(score.querySelector('input'))return;
+  const inp=document.createElement('input');
+  inp.type='number';inp.className='edit';inp.value=p.score;
+  score.textContent='';score.appendChild(inp);
+  inp.focus();inp.select();
+  let done=false;
+  const finish=ok=>{
+    if(done)return;done=true;
+    const n=parseInt(inp.value,10);
+    if(ok&&!isNaN(n)){p.score=n;save()}
+    score.textContent=p.score;
+  };
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')finish(true);if(e.key==='Escape')finish(false)});
+  inp.addEventListener('blur',()=>finish(true));
+}
+
 function render(){
   board.innerHTML='';
   players.forEach((p,i)=>{
@@ -70,6 +90,8 @@ function render(){
     name.value=p.name;score.textContent=p.score;
     name.addEventListener('input',()=>{p.name=name.value;save()});
     name.addEventListener('keydown',e=>{if(e.key==='Enter')name.blur()});
+    let last=0;
+    score.addEventListener('pointerup',()=>{const t=Date.now();if(t-last<350){last=0;editScore(p,score)}else last=t});
     holdable(minus,-1,p,score);holdable(plus,1,p,score);
     s.querySelector('.del').onclick=()=>{if(players.length>1){players.splice(i,1);save();render()}};
     board.appendChild(s);
