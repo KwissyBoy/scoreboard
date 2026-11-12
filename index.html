@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Scoreboard</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#111;display:flex;flex-direction:column;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#board{flex:1;display:flex;flex-direction:column;min-height:0}
+@media (orientation:landscape){#board{flex-direction:row}}
+.sec{flex:1;min-width:0;min-height:0;position:relative;display:flex;flex-direction:column;padding:8px 14px;background:var(--bg);color:var(--fg);container-type:size}
+.top{display:flex;align-items:center;justify-content:center;position:relative;height:32px;flex:none}
+.name{font:inherit;font-size:16px;letter-spacing:.06em;text-align:center;color:inherit;background:transparent;border:none;outline:none;width:70%;padding:4px 6px;border-radius:6px;-webkit-user-select:text;user-select:text}
+.name:focus{background:var(--tint)}
+.del{position:absolute;right:0;top:0;width:32px;height:32px;border:none;border-radius:50%;background:transparent;color:inherit;opacity:.45;font-size:16px;cursor:pointer}
+.del:hover{opacity:.9;background:var(--tint)}
+.mid{flex:1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:0}
+.score{flex:1;text-align:center;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;font-size:min(55cqh,26cqw);font-size:clamp(40px,min(55cqh,26cqw),400px)}
+.btn{flex:none;width:clamp(52px,16cqmin,96px);height:clamp(52px,16cqmin,96px);border-radius:50%;border:2px solid var(--fg);background:var(--tint);color:var(--fg);font-size:clamp(26px,8cqmin,48px);line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.btn:active{background:var(--fg);color:var(--bg)}
+footer{display:flex;justify-content:space-between;align-items:center;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:#111}
+footer button{font:inherit;font-size:13px;color:#888;background:transparent;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;letter-spacing:.04em}
+footer button:hover{color:#ccc;background:#222}
+</style>
+</head>
+<body>
+<main id="board"></main>
+<footer>
+  <button id="add">+ player</button>
+  <button id="reset">reset</button>
+</footer>
+<script>
+const COLORS=[
+ ['#B5D4F4','#042C53'],['#FAC775','#412402'],['#9FE1CB','#04342C'],['#F4C0D1','#4B1528'],
+ ['#CECBF6','#26215C'],['#F7C1C1','#501313'],['#C0DD97','#173404'],['#F5C4B3','#4A1B0C']
+];
+const KEY='scoreboard-v1';
+let players;
+try{players=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!Array.isArray(players)||!players.length)players=[1,2,3].map(n=>({name:'Player '+n,score:0}));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(players))}catch(e){}};
+const board=document.getElementById('board');
+
+function holdable(btn,step,p,out){
+  let t1,t2;
+  const bump=()=>{p.score+=step;out.textContent=p.score;save()};
+  const stop=()=>{clearTimeout(t1);clearInterval(t2)};
+  btn.addEventListener('pointerdown',e=>{
+    e.preventDefault();bump();
+    t1=setTimeout(()=>{t2=setInterval(bump,90)},450);
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,stop));
+  btn.addEventListener('contextmenu',e=>e.preventDefault());
+}
+
+function render(){
+  board.innerHTML='';
+  players.forEach((p,i)=>{
+    const [bg,fg]=COLORS[i%COLORS.length];
+    const s=document.createElement('section');
+    s.className='sec';
+    s.style.setProperty('--bg',bg);s.style.setProperty('--fg',fg);s.style.setProperty('--tint',fg+'14');
+    s.innerHTML=`<div class="top"><input class="name" maxlength="24" spellcheck="false"><button class="del" aria-label="Remove player">✕</button></div>
+      <div class="mid"><button class="btn" aria-label="Minus">−</button><div class="score"></div><button class="btn" aria-label="Plus">+</button></div>`;
+    const name=s.querySelector('.name'),score=s.querySelector('.score'),[minus,plus]=s.querySelectorAll('.btn');
+    name.value=p.name;score.textContent=p.score;
+    name.addEventListener('input',()=>{p.name=name.value;save()});
+    name.addEventListener('keydown',e=>{if(e.key==='Enter')name.blur()});
+    holdable(minus,-1,p,score);holdable(plus,1,p,score);
+    s.querySelector('.del').onclick=()=>{if(players.length>1){players.splice(i,1);save();render()}};
+    board.appendChild(s);
+  });
+}
+document.getElementById('add').onclick=()=>{players.push({name:'Player '+(players.length+1),score:0});save();render()};
+document.getElementById('reset').onclick=()=>{players.forEach(p=>p.score=0);save();render()};
+render();
+</script>
+</body>
+</html>
