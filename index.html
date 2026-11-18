@@ -10,102 +10,280 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Score">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#000000">
 <style>
-*{box-sizing:border-box;margin:0}
-html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#111;display:flex;flex-direction:column;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-#board{flex:1;display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);background:#111}
+:root{color-scheme:dark;--blue:#0A84FF;--red:#FF453A;--ease:cubic-bezier(.32,.72,0,1);--spring:cubic-bezier(.34,1.56,.64,1)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;color:#fff;display:flex;flex-direction:column;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-touch-callout:none;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+svg{display:block}
+
+#board{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left))}
 @media (orientation:landscape){#board{flex-direction:row}}
-.sec{flex:1;min-width:0;min-height:0;position:relative;display:flex;flex-direction:column;padding:8px 14px;background:var(--bg);color:var(--fg);container-type:size}
-.top{display:flex;align-items:center;justify-content:center;position:relative;height:32px;flex:none}
-.name{font:inherit;font-size:16px;letter-spacing:.06em;text-align:center;color:inherit;background:transparent;border:none;outline:none;width:70%;padding:4px 6px;border-radius:6px;-webkit-user-select:text;user-select:text}
-.name:focus{background:var(--tint)}
-.del{position:absolute;right:0;top:0;width:32px;height:32px;border:none;border-radius:50%;background:transparent;color:inherit;opacity:.45;font-size:16px;cursor:pointer}
-.del:hover{opacity:.9;background:var(--tint)}
-.mid{flex:1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:0}
-.score{flex:1;text-align:center;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;font-size:min(55cqh,26cqw);font-size:clamp(40px,min(55cqh,26cqw),400px)}
-.mid{padding:0 4cqw}
-.btn{flex:none;align-self:stretch;width:clamp(84px,24cqw,200px);border:none;background:transparent;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg)}
-.ring{width:clamp(52px,16cqmin,96px);height:clamp(52px,16cqmin,96px);border-radius:50%;border:2px solid var(--fg);background:var(--tint);font-size:clamp(26px,8cqmin,48px);line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.btn:active .ring{background:var(--fg);color:var(--bg)}
-.score{cursor:text}
-.edit{width:100%;font:inherit;font-weight:600;font-variant-numeric:tabular-nums;text-align:center;color:inherit;background:var(--tint);border:none;border-radius:12px;outline:2px solid var(--fg);padding:0;-moz-appearance:textfield;-webkit-user-select:text;user-select:text}
-.edit::-webkit-inner-spin-button,.edit::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-footer{display:flex;justify-content:space-between;align-items:center;padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:#111}
-footer button{font:inherit;font-size:13px;color:#888;background:transparent;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;letter-spacing:.04em}
-footer button:hover{color:#ccc;background:#222}
+
+.card{flex:1 1 0;min-width:0;min-height:0;position:relative;display:flex;flex-direction:column;border-radius:28px;background:var(--bg);color:var(--fg);container-type:size;overflow:hidden;transition:flex-grow .38s var(--ease),opacity .3s ease,transform .38s var(--ease),background-color .35s ease,color .35s ease}
+.card.enter{flex-grow:.0001;opacity:0;transform:scale(.94)}
+.card.leave{flex-grow:.0001;opacity:0;transform:scale(.94)}
+
+.head{flex:none;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:10px 10px 0}
+.name{grid-column:2;justify-self:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;letter-spacing:-.01em;font-size:max(17px,min(11cqh,7.5cqw));padding:4px 12px;border-radius:999px;transition:background-color .2s}
+.name:active{background:var(--tint)}
+.icon{grid-column:3;width:36px;height:36px;justify-self:end;border-radius:50%;display:grid;place-items:center;background:var(--tint);opacity:.75;transition:transform .2s var(--spring),opacity .2s}
+.icon:active{transform:scale(.88) rotate(-40deg);opacity:1}
+.icon svg{width:17px;height:17px}
+
+.mid{flex:1;min-height:0;display:flex;align-items:stretch;padding:0 3cqw}
+.btn{flex:none;width:clamp(66px,22cqw,200px);display:flex;align-items:center;justify-content:center}
+.ring{width:clamp(54px,17cqmin,92px);height:clamp(54px,17cqmin,92px);border-radius:50%;background:var(--tint);display:grid;place-items:center;transition:transform .35s var(--spring),background-color .15s;pointer-events:none}
+.ring svg{width:42%;height:42%}
+.btn.down .ring{transform:scale(.86);background:var(--tint2);transition-duration:.08s}
+
+.sw{flex:1;min-width:0;position:relative;container-type:size;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.score{font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;font-size:max(28px,min(62cqh,calc(100cqw / var(--k,1.3)),420px));white-space:nowrap}
+.score.bump{animation:bump .26s var(--spring)}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}
+.delta{position:absolute;left:50%;top:6%;transform:translate(-50%,6px);font-family:ui-rounded,"SF Pro Rounded",-apple-system,sans-serif;font-weight:700;font-size:max(15px,min(11cqh,14cqw));padding:3px 10px;border-radius:999px;background:var(--tint);opacity:0;transition:opacity .25s,transform .35s var(--spring);pointer-events:none;font-variant-numeric:tabular-nums}
+.delta.on{opacity:1;transform:translate(-50%,0)}
+
+footer{flex:none;display:flex;justify-content:space-between;align-items:center;padding:8px max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+.pill{display:flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:#1C1C1E;color:#AEAEB2;font-size:14px;font-weight:500;transition:transform .2s var(--spring),background-color .2s}
+.pill:active{transform:scale(.94);background:#2C2C2E}
+.pill svg{width:14px;height:14px}
+
+#ov{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s}
+#ov.open{opacity:1;visibility:visible;transition:opacity .3s ease}
+.sheet{position:absolute;left:50%;top:max(16px,calc(env(safe-area-inset-top) + 10px));width:min(420px,calc(100% - 20px));background:rgba(28,28,30,.96);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.08) inset;transform:translate(-50%,-14px) scale(.97);opacity:0;transition:transform .42s var(--ease),opacity .25s ease;overflow:hidden}
+#ov.open .sheet{transform:translate(-50%,0) scale(1);opacity:1}
+.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:52px;padding:0 6px}
+.bar button{font-size:17px;color:var(--blue);padding:8px 10px;border-radius:10px}
+.bar button:active{opacity:.5}
+#sCancel{justify-self:start}
+#sDone{justify-self:end;font-weight:600}
+#sTitle{font-size:17px;font-weight:600;max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.body{padding:4px 16px 18px}
+.preview{height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:22px;letter-spacing:-.01em;margin-bottom:14px;transition:background-color .3s,color .3s;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 16px}
+.field{position:relative;display:flex;align-items:center;background:#2C2C2E;border-radius:12px;height:48px}
+.field input{flex:1;min-width:0;height:100%;background:none;border:none;outline:none;color:#fff;font:inherit;font-size:17px;padding:0 44px 0 14px;-webkit-user-select:text;user-select:text}
+.field input::placeholder{color:#636366}
+.clear{position:absolute;right:10px;width:22px;height:22px;border-radius:50%;background:#636366;color:#1C1C1E;display:grid;place-items:center;transition:opacity .15s}
+.clear svg{width:10px;height:10px}
+.clear.hide{opacity:0;pointer-events:none}
+.cap{font-size:13px;color:#8E8E93;text-transform:uppercase;letter-spacing:.02em;margin:18px 4px 8px}
+.swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.sw8{aspect-ratio:1;border-radius:50%;background:var(--c);position:relative;transition:transform .25s var(--spring)}
+.sw8:active{transform:scale(.88)}
+.sw8.sel::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2.5px solid #fff}
+.group{margin-top:18px;background:#2C2C2E;border-radius:12px;overflow:hidden}
+.row{display:flex;justify-content:space-between;align-items:center;width:100%;height:46px;padding:0 14px;font-size:17px;text-align:left}
+.row+.row{box-shadow:0 -.5px 0 rgba(255,255,255,.12)}
+.row:active{background:#3A3A3C}
+.row .v{color:#8E8E93;font-variant-numeric:tabular-nums}
+.row.danger{color:var(--red)}
+.row[disabled]{opacity:.35;pointer-events:none}
+.big{width:100%;height:84px;background:#2C2C2E;border:none;outline:none;border-radius:16px;color:#fff;text-align:center;font-family:ui-rounded,"SF Pro Rounded",-apple-system,sans-serif;font-weight:700;font-size:48px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;-moz-appearance:textfield;-webkit-user-select:text;user-select:text}
+.big::-webkit-inner-spin-button,.big::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+.chip{height:40px;border-radius:12px;background:#2C2C2E;font-family:ui-rounded,"SF Pro Rounded",-apple-system,sans-serif;font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;transition:transform .2s var(--spring)}
+.chip:active{transform:scale(.92);background:#3A3A3C}
+
+#toast{position:fixed;left:50%;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 52px);transform:translate(-50%,20px) scale(.96);opacity:0;z-index:5;display:flex;align-items:center;gap:14px;height:44px;padding:0 8px 0 18px;border-radius:999px;background:rgba(44,44,46,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:15px;font-weight:500;white-space:nowrap;pointer-events:none;transition:transform .4s var(--spring),opacity .25s}
+#toast.on{transform:translate(-50%,0) scale(1);opacity:1;pointer-events:auto}
+#toast button{color:var(--blue);font-weight:600;padding:8px 12px;border-radius:999px}
+#toast button:active{background:rgba(255,255,255,.08)}
+#hx,#hl{position:absolute;left:-9999px;opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
 <main id="board"></main>
 <footer>
-  <button id="add">+ player</button>
-  <button id="reset">reset</button>
+  <button class="pill" id="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Player</button>
+  <button class="pill" id="resetAll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 3.5V9h5.5"/></svg>Reset all</button>
 </footer>
+
+<div id="ov" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <div class="bar"><button id="sCancel">Cancel</button><div id="sTitle"></div><button id="sDone">Done</button></div>
+    <div class="body" id="sBody"></div>
+  </div>
+</div>
+<div id="toast" role="status"><span id="tMsg"></span><button id="tUndo">Undo</button></div>
+<input type="checkbox" switch id="hx"><label for="hx" id="hl"></label>
+
 <script>
 const COLORS=[
- ['#B5D4F4','#042C53'],['#FAC775','#412402'],['#9FE1CB','#04342C'],['#F4C0D1','#4B1528'],
- ['#CECBF6','#26215C'],['#F7C1C1','#501313'],['#C0DD97','#173404'],['#F5C4B3','#4A1B0C']
+ {bg:'#BFDDFF',fg:'#0A3666'},{bg:'#FFD7A6',fg:'#5A2D00'},{bg:'#B4EED8',fg:'#00402C'},{bg:'#FFC8DC',fg:'#5C0E31'},
+ {bg:'#D6D2FF',fg:'#241A6B'},{bg:'#FFEC9E',fg:'#4A3800'},{bg:'#FFC5BF',fg:'#5C0F08'},{bg:'#D3F0B5',fg:'#1E4806'}
 ];
+const I={
+ plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>',
+ minus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 12h16"/></svg>',
+ reset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 3.5V9h5.5"/></svg>',
+ x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
 const KEY='scoreboard-v1';
+const $=id=>document.getElementById(id);
+const board=$('board');
 let players;
 try{players=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!Array.isArray(players)||!players.length)players=[1,2,3].map(n=>({name:'Player '+n,score:0}));
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(players))}catch(e){}};
-const board=document.getElementById('board');
+players.forEach((p,i)=>{if(typeof p.color!=='number')p.color=i%COLORS.length});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(players.map(({name,score,color})=>({name,score,color}))))}catch(e){}};
+const fit=el=>el.style.setProperty('--k',(el.textContent.length*0.64+0.25).toFixed(2));
+const fmt=n=>n<0?'−'+Math.abs(n):String(n);
 
-function holdable(btn,step,p,out){
-  let t1,t2;
-  const bump=()=>{p.score+=step;out.textContent=p.score;save()};
-  const stop=()=>{clearTimeout(t1);clearInterval(t2)};
+function haptic(){
+  try{if(navigator.vibrate){navigator.vibrate(8);return}$('hl').click()}catch(e){}
+}
+function nextColor(){
+  const used=new Set(players.map(p=>p.color));
+  for(let i=0;i<COLORS.length;i++)if(!used.has(i))return i;
+  return players.length%COLORS.length;
+}
+function paint(el,c){
+  const {bg,fg}=COLORS[c];
+  el.style.setProperty('--bg',bg);el.style.setProperty('--fg',fg);
+  el.style.setProperty('--tint',fg+'14');el.style.setProperty('--tint2',fg+'2A');
+}
+
+function setScore(p,v,card,animate=true){
+  const d=v-p.score;if(!d&&animate)return;
+  p.score=v;save();
+  const sc=card.querySelector('.score');
+  sc.textContent=fmt(v);fit(sc);
+  if(animate){
+    sc.classList.remove('bump');void sc.offsetWidth;sc.classList.add('bump');
+    const de=card.querySelector('.delta');
+    p._acc=(p._acc||0)+d;
+    de.textContent=(p._acc>0?'+':p._acc<0?'−':'±')+Math.abs(p._acc);
+    de.classList.add('on');
+    clearTimeout(p._dt);
+    p._dt=setTimeout(()=>{de.classList.remove('on');p._acc=0},1300);
+  }
+}
+
+function holdable(btn,step,p,card){
+  let t1,t2,n=0;
+  const bump=()=>{setScore(p,p.score+step,card);haptic()};
+  const stop=()=>{clearTimeout(t1);clearInterval(t2);btn.classList.remove('down')};
   btn.addEventListener('pointerdown',e=>{
-    e.preventDefault();bump();
-    t1=setTimeout(()=>{t2=setInterval(bump,90)},450);
+    e.preventDefault();btn.classList.add('down');bump();n=0;
+    t1=setTimeout(()=>{t2=setInterval(()=>{bump();if(++n===20){clearInterval(t2);t2=setInterval(bump,45)}},95)},420);
   });
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,stop));
   btn.addEventListener('contextmenu',e=>e.preventDefault());
 }
 
-function editScore(p,score){
-  if(score.querySelector('input'))return;
-  const inp=document.createElement('input');
-  inp.type='number';inp.className='edit';inp.value=p.score;
-  score.textContent='';score.appendChild(inp);
-  inp.focus();inp.select();
-  let done=false;
-  const finish=ok=>{
-    if(done)return;done=true;
-    const n=parseInt(inp.value,10);
-    if(ok&&!isNaN(n)){p.score=n;save()}
-    score.textContent=p.score;
-  };
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')finish(true);if(e.key==='Escape')finish(false)});
-  inp.addEventListener('blur',()=>finish(true));
-}
-
-function render(){
+function render(enterIdx=-1){
   board.innerHTML='';
   players.forEach((p,i)=>{
-    const [bg,fg]=COLORS[i%COLORS.length];
-    const s=document.createElement('section');
-    s.className='sec';
-    s.style.setProperty('--bg',bg);s.style.setProperty('--fg',fg);s.style.setProperty('--tint',fg+'14');
-    s.innerHTML=`<div class="top"><input class="name" maxlength="24" spellcheck="false"><button class="del" aria-label="Remove player">✕</button></div>
-      <div class="mid"><button class="btn" aria-label="Minus"><span class="ring">−</span></button><div class="score"></div><button class="btn" aria-label="Plus"><span class="ring">+</span></button></div>`;
-    const name=s.querySelector('.name'),score=s.querySelector('.score'),[minus,plus]=s.querySelectorAll('.btn');
-    name.value=p.name;score.textContent=p.score;
-    name.addEventListener('input',()=>{p.name=name.value;save()});
-    name.addEventListener('keydown',e=>{if(e.key==='Enter')name.blur()});
+    const c=document.createElement('section');
+    c.className='card'+(i===enterIdx?' enter':'');
+    paint(c,p.color);
+    c.innerHTML=`<div class="head"><button class="name"></button><button class="icon" aria-label="Reset this score">${I.reset}</button></div>
+      <div class="mid"><button class="btn" aria-label="Minus"><span class="ring">${I.minus}</span></button>
+      <div class="sw"><div class="score"></div><div class="delta"></div></div>
+      <button class="btn" aria-label="Plus"><span class="ring">${I.plus}</span></button></div>`;
+    const nameEl=c.querySelector('.name');
+    nameEl.textContent=p.name||'Player';
+    {const sc=c.querySelector('.score');sc.textContent=fmt(p.score);fit(sc)}
+    nameEl.onclick=()=>openName(i);
+    c.querySelector('.icon').onclick=()=>{
+      if(p.score===0)return;
+      const snap=snapshot();setScore(p,0,c);haptic();
+      toast((p.name||'Player')+' reset',snap);
+    };
+    const [m,pl]=c.querySelectorAll('.btn');
+    holdable(m,-1,p,c);holdable(pl,1,p,c);
     let last=0;
-    score.addEventListener('pointerup',()=>{const t=Date.now();if(t-last<350){last=0;editScore(p,score)}else last=t});
-    holdable(minus,-1,p,score);holdable(plus,1,p,score);
-    s.querySelector('.del').onclick=()=>{if(players.length>1){players.splice(i,1);save();render()}};
-    board.appendChild(s);
+    c.querySelector('.sw').addEventListener('pointerup',()=>{const t=Date.now();if(t-last<350){last=0;openScore(i)}else last=t});
+    board.appendChild(c);
   });
+  if(enterIdx>=0){const c=board.children[enterIdx];requestAnimationFrame(()=>requestAnimationFrame(()=>c.classList.remove('enter')))}
 }
-document.getElementById('add').onclick=()=>{players.push({name:'Player '+(players.length+1),score:0});save();render()};
-document.getElementById('reset').onclick=()=>{players.forEach(p=>p.score=0);save();render()};
+
+const snapshot=()=>JSON.stringify(players.map(({name,score,color})=>({name,score,color})));
+let tTimer;
+function toast(msg,snap){
+  $('tMsg').textContent=msg;
+  $('toast').classList.add('on');
+  $('tUndo').onclick=()=>{players=JSON.parse(snap);save();render();hideToast();haptic()};
+  clearTimeout(tTimer);tTimer=setTimeout(hideToast,4000);
+}
+function hideToast(){$('toast').classList.remove('on')}
+
+function removePlayer(i){
+  if(players.length<2)return;
+  const snap=snapshot(),name=players[i].name||'Player';
+  const c=board.children[i];c.classList.add('leave');
+  setTimeout(()=>{players.splice(i,1);save();render();toast(name+' removed',snap)},300);
+}
+
+let onDone=null,onCancel=null;
+function openSheet(title,html,done,cancel){
+  $('sTitle').textContent=title;$('sBody').innerHTML=html;
+  onDone=done;onCancel=cancel||null;
+  $('ov').classList.add('open');$('ov').setAttribute('aria-hidden','false');
+}
+function closeSheet(){
+  $('ov').classList.remove('open');$('ov').setAttribute('aria-hidden','true');
+  document.activeElement&&document.activeElement.blur();
+}
+$('sCancel').onclick=()=>{onCancel&&onCancel();closeSheet()};
+$('sDone').onclick=()=>{onDone&&onDone();closeSheet()};
+$('ov').addEventListener('pointerdown',e=>{if(e.target===$('ov')){onCancel&&onCancel();closeSheet()}});
+document.addEventListener('keydown',e=>{
+  if(!$('ov').classList.contains('open'))return;
+  if(e.key==='Escape')$('sCancel').click();
+  if(e.key==='Enter'){e.preventDefault();$('sDone').click()}
+});
+
+function openName(i){
+  const p=players[i];let color=p.color;
+  openSheet('Player',`
+    <div class="preview" id="pv"></div>
+    <div class="field"><input id="fName" maxlength="24" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" placeholder="Name"><button class="clear" id="fClr" aria-label="Clear">${I.x}</button></div>
+    <div class="cap">Colour</div>
+    <div class="swatches">${COLORS.map((c,k)=>`<button class="sw8" data-k="${k}" style="--c:${c.bg}" aria-label="Colour ${k+1}"></button>`).join('')}</div>
+    <div class="group">
+      <button class="row" id="rReset">Reset score<span class="v">${fmt(p.score)}</span></button>
+      <button class="row danger" id="rRemove"${players.length<2?' disabled':''}>Remove player</button>
+    </div>`,
+    ()=>{const v=$('fName').value.trim();p.name=v||p.name;p.color=color;save();render()});
+  const inp=$('fName'),pv=$('pv'),clr=$('fClr');
+  inp.value=p.name;
+  const upd=()=>{pv.textContent=inp.value.trim()||'Player';clr.classList.toggle('hide',!inp.value);
+    pv.style.background=COLORS[color].bg;pv.style.color=COLORS[color].fg;
+    document.querySelectorAll('.sw8').forEach(b=>b.classList.toggle('sel',+b.dataset.k===color))};
+  upd();inp.addEventListener('input',upd);
+  clr.onclick=()=>{inp.value='';upd();inp.focus()};
+  document.querySelectorAll('.sw8').forEach(b=>b.onclick=()=>{color=+b.dataset.k;upd();haptic()});
+  $('rReset').onclick=()=>{closeSheet();const c=board.children[i];if(p.score!==0){const s=snapshot();setScore(p,0,c);toast((p.name||'Player')+' reset',s)}};
+  $('rRemove').onclick=()=>{closeSheet();removePlayer(i)};
+  inp.focus();inp.select();
+}
+
+function openScore(i){
+  const p=players[i];
+  openSheet(p.name||'Score',`
+    <input class="big" id="fScore" type="number" inputmode="numeric" enterkeyhint="done">
+    <div class="chips">${[-10,-5,-1,1,5,10].map(n=>`<button class="chip" data-n="${n}">${n>0?'+':'−'}${Math.abs(n)}</button>`).join('')}</div>`,
+    ()=>{const n=parseInt($('fScore').value,10);if(!isNaN(n))setScore(p,n,board.children[i])});
+  const inp=$('fScore');inp.value=p.score;
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{inp.value=(parseInt(inp.value,10)||0)+(+b.dataset.n);haptic()});
+  inp.focus();inp.select();
+}
+
+$('add').onclick=()=>{
+  if(players.length>=8){haptic();return}
+  players.push({name:'Player '+(players.length+1),score:0,color:nextColor()});save();render(players.length-1);haptic();
+};
+$('resetAll').onclick=()=>{
+  if(players.every(p=>p.score===0))return;
+  const snap=snapshot();
+  [...board.children].forEach((c,i)=>setScore(players[i],0,c));
+  haptic();toast('All scores reset',snap);
+};
 render();
 </script>
 </body>
